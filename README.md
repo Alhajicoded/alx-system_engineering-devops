@@ -1,1 +1,1 @@
-My first script writing project
+Create directory
