@@ -1,1 +1,1 @@
-Uppercase
+Delete files
