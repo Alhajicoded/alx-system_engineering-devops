@@ -1,1 +1,1 @@
-Script that prints the current working directory
+Display list of current working directory
