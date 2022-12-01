@@ -1,1 +1,1 @@
-Symbol
+Copy html
