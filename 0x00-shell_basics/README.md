@@ -1,1 +1,1 @@
-Print file type
+Symbol
