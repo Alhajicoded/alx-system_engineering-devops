@@ -1,2 +1,2 @@
 #!/bin/bash
-chown alhajicoded:staff *
+chown vincent:staff *
