@@ -1,1 +1,1 @@
-Play starwars
+starwars
