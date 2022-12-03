@@ -1,1 +1,1 @@
-Star
+Every
