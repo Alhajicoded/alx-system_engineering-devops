@@ -1,1 +1,1 @@
-Takes list
+Display lines
