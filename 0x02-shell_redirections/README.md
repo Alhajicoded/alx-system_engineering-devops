@@ -1,1 +1,1 @@
-10 newest
+Takes list
