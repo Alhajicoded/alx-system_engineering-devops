@@ -1,1 +1,1 @@
-Alias
+print hello
