@@ -1,65 +1,72 @@
-#!/usr/bin/python3
+<F11>#!/usr/bin/python3
 """
-Module for requesting the Reddit API
+Function that queries the Reddit API and prints
+the top ten hot posts of a subreddit
 """
+import re
 import requests
-URL = 'https://www.reddit.com'
-headers = {"User-Agent": "Custom Agent"}
+import sys
+
+
+def add_title(dictionary, hot_posts):
+    """ Adds item into a list """
+    if len(hot_posts) == 0:
+        return
+
+    title = hot_posts[0]['data']['title'].split()
+    for word in title:
+        for key in dictionary.keys():
+            c = re.compile("^{}$".format(key), re.I)
+            if c.findall(word):
+                dictionary[key] += 1
+    hot_posts.pop(0)
+    add_title(dictionary, hot_posts)
+
+
+def recurse(subreddit, dictionary, after=None):
+    """ Queries to Reddit API """
+    u_agent = 'Mozilla/5.0'
+    headers = {
+        'User-Agent': u_agent
+    }
+
+    params = {
+        'after': after
+    }
+
+    url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
+    res = requests.get(url,
+                       headers=headers,
+                       params=params,
+                       allow_redirects=False)
+
+    if res.status_code != 200:
+        return None
+
+    dic = res.json()
+    hot_posts = dic['data']['children']
+    add_title(dictionary, hot_posts)
+    after = dic['data']['after']
+    if not after:
+        return
+    recurse(subreddit, dictionary, after=after)
 
 
 def count_words(subreddit, word_list):
-    """Prints a count of given keywords"""
-    try:
-        uri = URL + '/r/{}/hot.json'.format(subreddit)
-        hot_titles = fetch_hot_posts(uri)
-        pure_word_list = sanitize(word_list)
-        result = dict(zip(pure_word_list, [0] * len(pure_word_list)))
-        for title in hot_titles:
-            for word in pure_word_list:
-                occurrences = count_occurrences(word, title.split())
-                if occurrences:
-                    result[word] += occurrences
-        result = dict(sorted(result.items()))
-        for key, value in result.items():
-            if value:
-                print("{}: {}".format(key.lower(), value))
-        return result
-    except Exception as e:
-        print(e)
+    """ Init function """
+    dictionary = {}
 
+    for word in word_list:
+        dictionary[word] = 0
 
-def fetch_hot_posts(uri, after=None, hot_list=[]):
-    """Recursive function for the job"""
-    parameters = {}
-    if after:
-        parameters['after'] = after
-    res = requests.get(uri,
-                       headers=headers,
-                       allow_redirects=False,
-                       params=parameters)
-    if res.status_code == 200:
-        children = res.json().get('data').get('children')
-        for child in children:
-            hot_list.append(child.get('data').get('title'))
-        next_ = res.json().get('data').get('after')
-        if next_ is not None:
-            fetch_hot_posts(uri, next_, hot_list)
-        return hot_list
+    recurse(subreddit, dictionary)
 
+    l = sorted(dictionary.items(), key=lambda kv: kv[1])
+    l.reverse()
 
-def count_occurrences(word, corpus):
-    """Counts occurrences of a word in a list of words"""
-    word = word.lower()
-    count = 0
-    for w in corpus:
-        if w.lower() == word:
-            count += 1
-    return count
-
-
-def sanitize(corpus):
-    pure_corpus = []
-    for word in corpus:
-        if count_occurrences(word, pure_corpus) == 0:
-            pure_corpus.append(word)
-    return pure_corpus
+    if len(l) != 0:
+        for item in l:
+            if item[1] is not 0:
+                print("{}: {}".format(item[0], item[1]))
+    else:
+        print("")
